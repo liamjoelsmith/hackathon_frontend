@@ -1,7 +1,7 @@
-export const nodes = [
+export var nodes = [
 ];
 
-export const edges = [
+export var edges = [
 ];
 
 

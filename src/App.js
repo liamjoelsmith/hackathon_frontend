@@ -32,17 +32,20 @@ const minimapStyle = {
 };
 
 // computes automatic graph layout
-const computeAutoLayout = () => {
-  const graph = computeLayout(emptyNodes, emptyEdges);
-  const newNodes = emptyNodes.map((node) => ({
+const computeAutoLayout = (nodes, edges) => {
+  // Compute the layout for the nodes and edges
+  const graph = computeLayout(nodes, edges);
+
+  // Update the position of the nodes based on the computed layout
+  const newNodes = nodes.map((node) => ({
       ...node,
       position: {
-          x: graph.node(node.id).x - 75 + window.innerWidth/4, // /4 ?
+          x: graph.node(node.id).x - 75, 
           y: graph.node(node.id).y - 25 + 100   
       }
   }));
 
-  return [...newNodes, ...infoNode];
+  return newNodes;
 };
 
 function fetchElements(url) {
@@ -52,18 +55,21 @@ function fetchElements(url) {
 
 const OverviewFlow = () => {
   // degree and major variables 
-  var [degreeSelected, setDegreeSelected] = useState('-');
-  var [majorSelected, setMajorSelected] = useNodesState('-');
+  const [degreeSelected, setDegreeSelected] = useState('-');
+  const [majorSelected, setMajorSelected] = useState('-');
 
   // define initial node state
-  const [nodes, setNodes, onNodesChange] = useNodesState(emptyNodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState(emptyEdges);
+  var [nodes, setNodes, onNodesChange] = useNodesState(emptyNodes);
+  var [edges, setEdges, onEdgesChange] = useEdgesState(emptyEdges);
+
   // keep track of degree selected
   const handleDegreeChange = (newOption) => {
     setDegreeSelected(newOption);
-    setNodes(initNodes);
-    setEdges(initEdges);
-      // run auto layout
+
+    const updatedNodes = computeAutoLayout(initNodes, initEdges);
+    const mergedNodes = [...infoNode, ...updatedNodes];
+    setNodes(mergedNodes);
+
     console.log('Degree changed to:', newOption);
   };
 
@@ -72,9 +78,6 @@ const OverviewFlow = () => {
     setMajorSelected(newOption);
     console.log('Major changed to:', newOption);
   };
-
-  // react flow wrapper
-  const reactFlowWrapper = useRef(null);
 
   // adjust edge type
   const edgesWithUpdatedTypes = edges.map((edge) => {
@@ -85,35 +88,22 @@ const OverviewFlow = () => {
     return edge;
   });
 
-  // run auto layout
-  useEffect(() => {
-    const layoutResult = computeAutoLayout();
-    setNodes(layoutResult);
+  // set initial layout (info node only)
+    useEffect(() => {
+    setNodes(infoNode);
   }, []); 
 
-  // pan/zoom to fit nodes
-  useEffect(() => {
-    if (reactFlowWrapper.current && nodes.length) {
-      const instance = reactFlowWrapper.current.reactFlowInstance;
-      instance.fitView();
-    }
-  }, [nodes]);
-
   return (
-    // <OptionChangeContext.Provider value={{handleDegreeChange, handleMajorChange}}>
     <OptionChangeContext.Provider value={{
-        nodes: nodes,  // Provide the nodes state
+        nodes: nodes,
         handleDegreeChange, 
         handleMajorChange,
-        setNodes, // In case you want to provide direct setter 
-        onNodesChange  // Provide the updater function
+        setNodes,
     }}>
       <ReactFlow
         nodes={nodes}
         edges={edgesWithUpdatedTypes}
-        onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
-        // onConnect={onConnect}
         nodeTypes={nodeTypes}
       >
       <MiniMap style={minimapStyle} zoomable pannable />
@@ -121,7 +111,6 @@ const OverviewFlow = () => {
       <Panel position="top-left">UQ Degree Planner</Panel>
       <Panel position="top-right">Hackathon 2023</Panel>
       <Background color="#aaa" gap={16} />
-      {/* <h1>UQ Degree Planner</h1> */}
       </ReactFlow>
     </OptionChangeContext.Provider>
   );

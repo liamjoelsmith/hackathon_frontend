@@ -2,20 +2,13 @@ import React, { memo, useContext, useState, useEffect } from 'react';
 import {  useReactFlow, useStoreApi } from 'reactflow';
 import OptionChangeContext from './OptionChangeContext';
 
-const majorOptions = [
-  {
-    value: '-',
-    label: '-',
-  },
-];
-
 function Select({ degreeValue, majorValue, handleId, nodeId }) {
   const { handleDegreeChange, handleMajorChange } = useContext(OptionChangeContext);
   const { setNodes } = useReactFlow();
   const store = useStoreApi();
   const [degreeOptions, setDegreeOptions] = useState([]);
+  const [majorOptions, setMajorOptions] = useState([]);
 
-  // do the
   useEffect(() => {
     fetch('http://localhost:5000/api/v1/degree')
       .then(response => response.json())
@@ -30,8 +23,20 @@ function Select({ degreeValue, majorValue, handleId, nodeId }) {
   const onDegreeChange = (evt) => {
     const newValue = evt.target.value;
     handleDegreeChange(newValue);
-    doUpdate(newValue, "degree")
+    doUpdate(newValue, "degree");
+    fetchMajorOptions(newValue);
   }
+
+  const fetchMajorOptions = (selectedDegree) => {
+    fetch(`http://localhost:5000/api/v1/majors/degree/${selectedDegree}`)
+      .then(response => response.json())
+      .then(data => {
+        setMajorOptions(data);
+      })
+      .catch(error => {
+        console.error('Error fetching major options:', error);
+      });
+  };
 
   const onMajorChange = (evt) => {
     const newValue = evt.target.value;
@@ -87,7 +92,7 @@ function Select({ degreeValue, majorValue, handleId, nodeId }) {
         ))}
       </select>
     </div>
-);
+  );
 }
 
 function CustomNode({ id, data }) {
