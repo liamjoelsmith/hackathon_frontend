@@ -1,6 +1,6 @@
-import ReactFlow, {
-    useNodesState
-} from 'reactflow';
+import React, {
+    useState
+} from 'react';
 
 // define default node attributes
 const position = { x: 0, y: 0 };  // place-holder position const
@@ -29,14 +29,34 @@ export const infoNode = [
 },
 ];
 
-// the root node, whose name will be changed to contain the degree name
-export const rootNode = [
-{
-    id: 'root',
-    position: { x: window.innerWidth / 2, y: 100 },
-    data: {
-    label: '-',
-    },
-    style: { backgroundColor: corebg, color: fontcol}
-},
-];
+// // the root node, whose name will be changed to contain the degree name
+// export const useRootNodeState = () => {
+//     const [rootNode, setRootNode] = useState({
+//         id: 'root',
+//         position: { x: window.innerWidth / 2, y: 100 },
+//         data: {
+//             label: '-',
+//         },
+//         style: { backgroundColor: 'corebg', color: 'fontcol' }
+//     });
+
+//     const handleLabelChange = (newOption) => {
+//         const updatedRoot = { ...rootNode };
+//         updatedRoot.data.label = newOption;
+//         setRootNode(updatedRoot);
+//     };
+
+//     return [rootNode, handleLabelChange];
+// };
+
+
+// export const rootNode = [
+// {
+//     id: 'root',
+//     position: { x: window.innerWidth / 2, y: 100 },
+//     data: {
+//     label: '-',
+//     },
+//     style: { backgroundColor: corebg, color: fontcol}
+// },
+// ];

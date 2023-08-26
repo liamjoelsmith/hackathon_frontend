@@ -8,7 +8,7 @@ import ReactFlow, {
   useEdgesState,
   Panel,
 } from 'reactflow';
-// import { nodes as emptyNodes, edges as emptyEdges } from './initial-elements';
+import { nodes as initNodes, edges as initEdges } from './initial-elements';
 import {nodes as emptyNodes, edges as emptyEdges} from './EmptyNodeState';
 import 'reactflow/dist/style.css';
 import './overview.css';
@@ -17,7 +17,9 @@ import './overview.css';
 import OptionChangeContext from './OptionChangeContext';
 import computeLayout from './ComputeLayout';
 import CustomNode from './CustomNode';
-import { infoNode, rootNode } from './HeaderNodes';
+// import { infoNode, rootNode } from './HeaderNodes';
+// import { infoNode, useRootNodeState } from './HeaderNodes';
+import { infoNode } from './HeaderNodes';
 
 // alias for custom node type
 const nodeTypes = {
@@ -40,47 +42,34 @@ const computeAutoLayout = () => {
       }
   }));
 
-  return [...newNodes, ...rootNode, ...infoNode];
+  return [...newNodes, ...infoNode];
 };
 
+function fetchElements(url) {
+  return fetch(url)
+      .then(response => response.json());
+}
+
 const OverviewFlow = () => {
-  // fetch degree information...
-  //...
-
-  // const [infoNodeElements, setInfoNodeElements] = useNodesState(infoNode);
-  // const [rootNodeElements, setRootNodeElements] = useNodesState(rootNode);
-
-  // define useful information
-  const [degreeSelected, setDegreeSelected] = useState('-');
-  const [majorSelected, setMajorSelected] = useNodesState('-');
+  // degree and major variables 
+  var [degreeSelected, setDegreeSelected] = useState('-');
+  var [majorSelected, setMajorSelected] = useNodesState('-');
 
   // define initial node state
   const [nodes, setNodes, onNodesChange] = useNodesState(emptyNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(emptyEdges);
-  const onConnect = useCallback((params) => setEdges((eds) => addEdge(params, eds)), []);
-
   // keep track of degree selected
   const handleDegreeChange = (newOption) => {
     setDegreeSelected(newOption);
-    
-    // change root node name
-    // ...
-
-    // fetch the degree from the database
-    // ...
-
-    // 
-
+    setNodes(initNodes);
+    setEdges(initEdges);
+      // run auto layout
     console.log('Degree changed to:', newOption);
   };
 
   // keep track of major selected
   const handleMajorChange = (newOption) => {
     setMajorSelected(newOption);
-
-    // fetch the degree from the database
-    // ...
-
     console.log('Major changed to:', newOption);
   };
 
@@ -111,13 +100,20 @@ const OverviewFlow = () => {
   }, [nodes]);
 
   return (
-    <OptionChangeContext.Provider value={{handleDegreeChange, handleMajorChange}}>
+    // <OptionChangeContext.Provider value={{handleDegreeChange, handleMajorChange}}>
+    <OptionChangeContext.Provider value={{
+        nodes: nodes,  // Provide the nodes state
+        handleDegreeChange, 
+        handleMajorChange,
+        setNodes, // In case you want to provide direct setter 
+        onNodesChange  // Provide the updater function
+    }}>
       <ReactFlow
         nodes={nodes}
         edges={edgesWithUpdatedTypes}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
-        onConnect={onConnect}
+        // onConnect={onConnect}
         nodeTypes={nodeTypes}
       >
       <MiniMap style={minimapStyle} zoomable pannable />
@@ -125,6 +121,7 @@ const OverviewFlow = () => {
       <Panel position="top-left">UQ Degree Planner</Panel>
       <Panel position="top-right">Hackathon 2023</Panel>
       <Background color="#aaa" gap={16} />
+      {/* <h1>UQ Degree Planner</h1> */}
       </ReactFlow>
     </OptionChangeContext.Provider>
   );

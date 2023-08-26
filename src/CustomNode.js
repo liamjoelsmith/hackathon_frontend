@@ -1,43 +1,31 @@
-import React, { memo, useContext } from 'react';
-import { Handle, useReactFlow, useStoreApi, Position } from 'reactflow';
-import FetchData from './FetchData'
+import React, { memo, useContext, useState, useEffect } from 'react';
+import {  useReactFlow, useStoreApi } from 'reactflow';
 import OptionChangeContext from './OptionChangeContext';
-
-const degreeOptions = [
-  {
-    value: '-',
-    label: '-',
-  },
-  {
-    value: 'testa',
-    label: 'testa',
-  },
-  {
-    value: 'testb',
-    label: 'testb',
-  },
-];
 
 const majorOptions = [
   {
     value: '-',
     label: '-',
   },
-  {
-    value: 'dega',
-    label: 'dega',
-  },
-  {
-    value: 'degb',
-    label: 'degb',
-  },
 ];
 
 function Select({ degreeValue, majorValue, handleId, nodeId }) {
   const { handleDegreeChange, handleMajorChange } = useContext(OptionChangeContext);
-  
   const { setNodes } = useReactFlow();
   const store = useStoreApi();
+  const [degreeOptions, setDegreeOptions] = useState([]);
+
+  // do the
+  useEffect(() => {
+    fetch('http://localhost:5000/api/v1/degree')
+      .then(response => response.json())
+      .then(data => {
+        setDegreeOptions(data);
+      })
+      .catch(error => {
+        console.error('Error fetching degree options:', error);
+      });
+  }, []);
 
   const onDegreeChange = (evt) => {
     const newValue = evt.target.value;
