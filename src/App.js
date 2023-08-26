@@ -65,18 +65,19 @@ const OverviewFlow = () => {
   // keep track of degree selected
   const handleDegreeChange = (newOption) => {
     setDegreeSelected(newOption);
-
-    const updatedNodes = computeAutoLayout(initNodes, initEdges);
-    const mergedNodes = [...infoNode, ...updatedNodes];
-    setNodes(mergedNodes);
-    setEdges(initEdges);
-
     console.log('Degree changed to:', newOption);
   };
 
   // keep track of major selected
-  const handleMajorChange = (newOption) => {
+  const handleMajorChange = (newOption, newNodes, newEdges) => {
     setMajorSelected(newOption);
+
+    const updatedNodes = computeAutoLayout(newNodes, newEdges);
+    const mergedNodes = [...infoNode, ...updatedNodes];
+    setNodes(mergedNodes);
+
+    // setNodes(newNodes);
+    setEdges(newEdges);
 
     console.log('Major changed to:', newOption);
   };

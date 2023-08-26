@@ -38,10 +38,33 @@ function Select({ degreeValue, majorValue, handleId, nodeId }) {
       });
   };
 
+  // const onMajorChange = (evt) => {
+  //   const newValue = evt.target.value;
+  //   handleMajorChange(newValue);
+  //   doUpdate(newValue, "major")
+  // }
+
   const onMajorChange = (evt) => {
     const newValue = evt.target.value;
-    handleMajorChange(newValue);
-    doUpdate(newValue, "major")
+
+    // Fetch nodes and edges after selecting major
+    fetch(`http://localhost:5000/api/v1/courses/mapping/${newValue}`) // Note: Use backticks for template literals
+    .then(response => response.json())
+    .then(data => {
+        const [nodes, edges] = data;
+
+        console.log("inside nodes", nodes);
+        console.log("inside edges", edges);
+
+        handleMajorChange(newValue, nodes, edges);
+        doUpdate(newValue, "major");
+
+        console.log("New nodes", nodes);
+        console.log("New edges", edges);
+    })
+    .catch(error => {
+        console.error('Error fetching nodes and edges:', error);
+    });
   }
 
   const doUpdate = (newValue, type) => {
