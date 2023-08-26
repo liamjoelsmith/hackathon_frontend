@@ -1,90 +1,133 @@
-import React, { useState, useEffect, } from 'react';
+import React, { useCallback, useEffect, useRef, useState} from 'react';
 import ReactFlow, {
-  Panel,
+  addEdge,
+  MiniMap,
+  Controls,
   Background,
-  MiniMap
+  useNodesState,
+  useEdgesState,
+  Panel,
 } from 'reactflow';
+// import { nodes as emptyNodes, edges as emptyEdges } from './initial-elements';
+import {nodes as emptyNodes, edges as emptyEdges} from './EmptyNodeState';
 import 'reactflow/dist/style.css';
-import dagre from 'dagre';
+import './overview.css';
 
-const position = { x: 0, y: 0 };  // place-holder position const
-const edgeType = 'smoothstep';    // specify edge type
-const animate = true;             // specify edge animation true/false
+// import helper .js files
+import OptionChangeContext from './OptionChangeContext';
+import computeLayout from './ComputeLayout';
+import CustomNode from './CustomNode';
+import { infoNode, rootNode } from './HeaderNodes';
 
-// define colours for course category
-const corebg = '#3F3B6C';
-const partabg = '#624F82';
-const partbbg = '#9F73AB';
-// const partcbg = '#A3C7D6';
-
-// text colour
-const fontcol = 'white'
-
-// (temporary) example set of initial nodes
-const initialNodes = [
-  { id: '1', type: 'input', data: { label: 'Root' }, position, style: { backgroundColor: corebg, color: fontcol} },
-  { id: '2', data: { label: 'Child 1' }, position, style: { backgroundColor: partabg,  color: fontcol} },
-  { id: '3', data: { label: 'Child 2' }, position, style: { backgroundColor: partabg,  color: fontcol} },
-  { id: '4', data: { label: 'Grandchild 1' }, position, style: { backgroundColor: partbbg,  color: fontcol} },
-  { id: '5', data: { label: 'Grandchild 2' }, position, style: { backgroundColor: partbbg,  color: fontcol} },
-  { id: '6', data: { label: 'Grandchild 1' }, position, style: { backgroundColor: partbbg,  color: fontcol} },
-  { id: '7', data: { label: 'Grandchild 2' }, position, style: { backgroundColor: partbbg,  color: fontcol} },
-];
-
-// (temporary) example set of initial edges
-const initialEdges = [
-  { id: 'e1-2', source: '1', target: '2', type: edgeType, animated: animate },
-  { id: 'e1-3', source: '1', target: '3', type: edgeType, animated: animate },
-  { id: 'e2-4', source: '2', target: '4', type: edgeType, animated: animate },
-  { id: 'e2-5', source: '2', target: '5', type: edgeType, animated: animate },
-  { id: 'e3-6', source: '3', target: '6', type: edgeType, animated: animate },
-  { id: 'e3-7', source: '3', target: '7', type: edgeType, animated: animate },
-];
-
-// get a visually nice layout for the nodes
-const computeLayout = (nodes, edges) => {
-  const graph = new dagre.graphlib.Graph();
-  graph.setGraph({});
-  graph.setDefaultEdgeLabel(() => ({}));
-
-  nodes.forEach((node) => {
-    graph.setNode(node.id, { width: 150, height: 50 }); // set node width/height
-  });
-
-  edges.forEach((edge) => {
-    graph.setEdge(edge.source, edge.target);
-  });
-
-  dagre.layout(graph);
-  return graph;
+// alias for custom node type
+const nodeTypes = {
+  custom: CustomNode,
 };
 
-// the main app
-export default function App() {
-  const [nodes, setNodes] = useState(initialNodes);
-  const [edges] = useState(initialEdges); // const [edges, setEdges] = useState(initialEdges);
+// define mini map
+const minimapStyle = {
+  height: 120,
+};
 
-  // compute the layout
+// computes automatic graph layout
+const computeAutoLayout = () => {
+  const graph = computeLayout(emptyNodes, emptyEdges);
+  const newNodes = emptyNodes.map((node) => ({
+      ...node,
+      position: {
+          x: graph.node(node.id).x - 75 + window.innerWidth/4, // /4 ?
+          y: graph.node(node.id).y - 25 + 100   
+      }
+  }));
+
+  return [...newNodes, ...rootNode, ...infoNode];
+};
+
+const OverviewFlow = () => {
+  // fetch degree information...
+  //...
+
+  // const [infoNodeElements, setInfoNodeElements] = useNodesState(infoNode);
+  // const [rootNodeElements, setRootNodeElements] = useNodesState(rootNode);
+
+  // define useful information
+  const [degreeSelected, setDegreeSelected] = useState('-');
+  const [majorSelected, setMajorSelected] = useNodesState('-');
+
+  // define initial node state
+  const [nodes, setNodes, onNodesChange] = useNodesState(emptyNodes);
+  const [edges, setEdges, onEdgesChange] = useEdgesState(emptyEdges);
+  const onConnect = useCallback((params) => setEdges((eds) => addEdge(params, eds)), []);
+
+  // keep track of degree selected
+  const handleDegreeChange = (newOption) => {
+    setDegreeSelected(newOption);
+    
+    // change root node name
+    // ...
+
+    // fetch the degree from the database
+    // ...
+
+    // 
+
+    console.log('Degree changed to:', newOption);
+  };
+
+  // keep track of major selected
+  const handleMajorChange = (newOption) => {
+    setMajorSelected(newOption);
+
+    // fetch the degree from the database
+    // ...
+
+    console.log('Major changed to:', newOption);
+  };
+
+  // react flow wrapper
+  const reactFlowWrapper = useRef(null);
+
+  // adjust edge type
+  const edgesWithUpdatedTypes = edges.map((edge) => {
+    if (edge.sourceHandle) {
+      const edgeType = nodes.find((node) => node.type === 'custom').data.selects[edge.sourceHandle];
+      edge.type = edgeType;
+    }
+    return edge;
+  });
+
+  // run auto layout
   useEffect(() => {
-    const graph = computeLayout(initialNodes, initialEdges);
-    const newNodes = initialNodes.map((node) => ({
-        ...node,
-        position: {
-            x: graph.node(node.id).x - 75,  // half of the width
-            y: graph.node(node.id).y - 25   // half of the height
-        }
-    }));
+    const layoutResult = computeAutoLayout();
+    setNodes(layoutResult);
+  }, []); 
 
-    setNodes(newNodes);
-  }, []);
+  // pan/zoom to fit nodes
+  useEffect(() => {
+    if (reactFlowWrapper.current && nodes.length) {
+      const instance = reactFlowWrapper.current.reactFlowInstance;
+      instance.fitView();
+    }
+  }, [nodes]);
 
   return (
-      <div style={{ width: '100vw', height: '100vh' }}>
-        <ReactFlow nodes={nodes} edges={edges}>
-          <Panel position="top-left">UQ Degree Planner</Panel>
-          <Background variant="cross" />
-          <MiniMap nodeStrokeWidth={3} zoomable pannable />
-        </ReactFlow>
-      </div>
+    <OptionChangeContext.Provider value={{handleDegreeChange, handleMajorChange}}>
+      <ReactFlow
+        nodes={nodes}
+        edges={edgesWithUpdatedTypes}
+        onNodesChange={onNodesChange}
+        onEdgesChange={onEdgesChange}
+        onConnect={onConnect}
+        nodeTypes={nodeTypes}
+      >
+      <MiniMap style={minimapStyle} zoomable pannable />
+      <Controls />
+      <Panel position="top-left">UQ Degree Planner</Panel>
+      <Panel position="top-right">Hackathon 2023</Panel>
+      <Background color="#aaa" gap={16} />
+      </ReactFlow>
+    </OptionChangeContext.Provider>
   );
-}
+};
+
+export default OverviewFlow;
