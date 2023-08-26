@@ -33,14 +33,14 @@ const minimapStyle = {
 
 // computes automatic graph layout
 const computeAutoLayout = (nodes, edges) => {
-  // Compute the layout for the nodes and edges
+  // compute the layout for the nodes and edges
   const graph = computeLayout(nodes, edges);
 
-  // Update the position of the nodes based on the computed layout
+  // update the position of the nodes based on the computed layout
   const newNodes = nodes.map((node) => ({
       ...node,
       position: {
-          x: graph.node(node.id).x - 75, 
+          x: graph.node(node.id).x - 75 + window.innerWidth/4, 
           y: graph.node(node.id).y - 25 + 100   
       }
   }));
@@ -69,6 +69,7 @@ const OverviewFlow = () => {
     const updatedNodes = computeAutoLayout(initNodes, initEdges);
     const mergedNodes = [...infoNode, ...updatedNodes];
     setNodes(mergedNodes);
+    setEdges(initEdges);
 
     console.log('Degree changed to:', newOption);
   };
@@ -76,6 +77,7 @@ const OverviewFlow = () => {
   // keep track of major selected
   const handleMajorChange = (newOption) => {
     setMajorSelected(newOption);
+
     console.log('Major changed to:', newOption);
   };
 
