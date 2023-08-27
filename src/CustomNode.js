@@ -38,29 +38,59 @@ function Select({ degreeValue, majorValue, handleId, nodeId }) {
       });
   };
 
-  // const onMajorChange = (evt) => {
-  //   const newValue = evt.target.value;
-  //   handleMajorChange(newValue);
-  //   doUpdate(newValue, "major")
-  // }
-
   const onMajorChange = (evt) => {
     const newValue = evt.target.value;
 
     // Fetch nodes and edges after selecting major
     fetch(`http://localhost:5000/api/v1/courses/mapping/${newValue}`) // Note: Use backticks for template literals
-    .then(response => response.json())
+    .then(response => //response.json()
+    {// Check if the response content type is JSON before parsing
+      const contentType = response.headers.get("content-type");
+      if (contentType && contentType.includes("application/json")) {
+          return response.json();
+      }
+      throw new TypeError("Oops, we haven't got JSON!");}
+    )
     .then(data => {
-        const [nodes, edges] = data;
+        console.log(data);
+        let [nodes, edges] = data;
 
-        console.log("inside nodes", nodes);
-        console.log("inside edges", edges);
+        // modify node colours based on course level
+        nodes = nodes.map(node => {
+          let bgColor = '#3F3B6C';
+          // find the first number in the label
+          const firstNumberMatch = node.data?.label.match(/\d/);
+          const firstNumber = firstNumberMatch ? firstNumberMatch[0] : null;
+          if (firstNumber === '1') {
+              bgColor = '#624F82';
+          } else if (firstNumber === '2') {
+              bgColor = '#9F73AB';
+          } else {
+            bgColor = '#A3C7D6';
+          }
+          return {
+              ...node,
+              style: {
+                  ...node.style,
+                  background: bgColor,
+                  color: 'white',
+              }
+          };
+        });
+
+      edges = edges.map(edge => ({
+        ...edge,
+        markerEnd: { type: 'arrow', color: 'black' },
+      }));
+
+        // console.log("inside nodes", nodes);
+        // console.log("inside edges", edges);
 
         handleMajorChange(newValue, nodes, edges);
         doUpdate(newValue, "major");
 
-        console.log("New nodes", nodes);
-        console.log("New edges", edges);
+        // console.log("New nodes", nodes);
+        // console.log("New edges", edges);
     })
     .catch(error => {
         console.error('Error fetching nodes and edges:', error);

@@ -8,7 +8,6 @@ import ReactFlow, {
   useEdgesState,
   Panel,
 } from 'reactflow';
-import { nodes as initNodes, edges as initEdges } from './initial-elements';
 import {nodes as emptyNodes, edges as emptyEdges} from './EmptyNodeState';
 import 'reactflow/dist/style.css';
 import './overview.css';
@@ -40,8 +39,8 @@ const computeAutoLayout = (nodes, edges) => {
   const newNodes = nodes.map((node) => ({
       ...node,
       position: {
-          x: graph.node(node.id).x - 75 + window.innerWidth/4, 
-          y: graph.node(node.id).y - 25 + 100   
+          x: graph.node(node.id).x - 25 + 100, 
+          y: graph.node(node.id).y*1.5 - 25 + 200   
       }
   }));
 
@@ -75,8 +74,6 @@ const OverviewFlow = () => {
     const updatedNodes = computeAutoLayout(newNodes, newEdges);
     const mergedNodes = [...infoNode, ...updatedNodes];
     setNodes(mergedNodes);
-
-    // setNodes(newNodes);
     setEdges(newEdges);
 
     console.log('Major changed to:', newOption);
@@ -92,7 +89,7 @@ const OverviewFlow = () => {
   });
 
   // set initial layout (info node only)
-    useEffect(() => {
+  useEffect(() => {
     setNodes(infoNode);
   }, []); 
 
@@ -108,12 +105,14 @@ const OverviewFlow = () => {
         edges={edgesWithUpdatedTypes}
         onEdgesChange={onEdgesChange}
         nodeTypes={nodeTypes}
+        nodesDraggable={true}
+        style={{ backgroundColor: 'rgba(203, 195, 227, 0.15)' }}
       >
       <MiniMap style={minimapStyle} zoomable pannable />
       <Controls />
-      <Panel position="top-left">UQ Degree Planner</Panel>
+      <Panel position="top-left">UQ Prerequisite Planner</Panel>
       <Panel position="top-right">Hackathon 2023</Panel>
-      <Background color="#aaa" gap={16} />
+      <Background color="rgba(148, 3, 252, 0.6)" gap={16} />
       </ReactFlow>
     </OptionChangeContext.Provider>
   );
