@@ -16,8 +16,6 @@ import './overview.css';
 import OptionChangeContext from './OptionChangeContext';
 import computeLayout from './ComputeLayout';
 import CustomNode from './CustomNode';
-// import { infoNode, rootNode } from './HeaderNodes';
-// import { infoNode, useRootNodeState } from './HeaderNodes';
 import { infoNode } from './HeaderNodes';
 
 // alias for custom node type
@@ -40,7 +38,7 @@ const computeAutoLayout = (nodes, edges) => {
       ...node,
       position: {
           x: graph.node(node.id).x - 25 + 100, 
-          y: graph.node(node.id).y*1.5 - 25 + 200   
+          y: graph.node(node.id).y*1.5*(1-0.1*Math.random()) - 25 + 225   
       }
   }));
 
@@ -110,8 +108,8 @@ const OverviewFlow = () => {
       >
       <MiniMap style={minimapStyle} zoomable pannable />
       <Controls />
-      <Panel position="top-left">UQ Prerequisite Planner</Panel>
-      <Panel position="top-right">Hackathon 2023</Panel>
+      <Panel position="top-left">UQ Prereq Grapher <br /> 2023 Hackathon </Panel>
+      <Panel position="top-right">Key: courses are coloured by level.</Panel>
       <Background color="rgba(148, 3, 252, 0.6)" gap={16} />
       </ReactFlow>
     </OptionChangeContext.Provider>

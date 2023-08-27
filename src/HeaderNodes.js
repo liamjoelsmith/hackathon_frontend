@@ -19,7 +19,7 @@ export const infoNode = [
 {
     id: 'info',
     type: 'custom',
-    position: { x: 50, y: 50 },
+    position: { x: 50, y: 75 },
     data: {
     label: 'Select a degree:',
     selects: {

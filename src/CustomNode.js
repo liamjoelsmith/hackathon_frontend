@@ -32,19 +32,33 @@ function Select({ degreeValue, majorValue, handleId, nodeId }) {
       .then(response => response.json())
       .then(data => {
         setMajorOptions(data);
+
+        // auto select
+        if (data.length > 0) {
+          const mockEvent = {
+            target: {
+              value: data[0].value,
+            },
+          };
+  
+          onMajorChange(mockEvent);
+        }
+
       })
       .catch(error => {
         console.error('Error fetching major options:', error);
       });
+      
+
   };
 
   const onMajorChange = (evt) => {
     const newValue = evt.target.value;
 
-    // Fetch nodes and edges after selecting major
-    fetch(`http://localhost:5000/api/v1/courses/mapping/${newValue}`) // Note: Use backticks for template literals
+    // fetch nodes and edges after selecting major
+    fetch(`http://localhost:5000/api/v1/courses/mapping/${newValue}`)
     .then(response => //response.json()
-    {// Check if the response content type is JSON before parsing
+    {// Check content type is JSON
       const contentType = response.headers.get("content-type");
       if (contentType && contentType.includes("application/json")) {
           return response.json();
@@ -83,14 +97,8 @@ function Select({ degreeValue, majorValue, handleId, nodeId }) {
         markerEnd: { type: 'arrow', color: 'black' },
       }));
 
-        // console.log("inside nodes", nodes);
-        // console.log("inside edges", edges);
-
         handleMajorChange(newValue, nodes, edges);
         doUpdate(newValue, "major");
-
-        // console.log("New nodes", nodes);
-        // console.log("New edges", edges);
     })
     .catch(error => {
         console.error('Error fetching nodes and edges:', error);
